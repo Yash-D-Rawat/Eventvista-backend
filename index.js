@@ -11,7 +11,7 @@ import userModel from './models/users.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const port = 5000;
+const port = process.env.PORT || 5000;
 const mongo_url = process.env.mongo_url
 const app = express();
 app.use(express.json({ limit: '10mb' })); // Set a larger limit for JSON payload
