@@ -21,10 +21,10 @@ app.use(cors({
     origin: process.env.frontend_url, // Allow requests from this origin
 }));
 app.use(bodyParser.json())
-app.use('/auth',authRouter)
-app.use('/home',dataRouter)
+app.use('/auth', authRouter)
+app.use('/home', dataRouter)
 
-app.get('/', async (req, res)=>{
+app.get('/', async (req, res) => {
     try {
         let events = await FeaturedEvent.find({});
         return res.status(200).json({
@@ -37,11 +37,11 @@ app.get('/', async (req, res)=>{
     }
 })
 
-app.get('/events/by_id/:id', async (req,res)=>{
+app.get('/events/by_id/:id', async (req, res) => {
     try {
-        const {id} = req.params
+        const { id } = req.params
         const event = await newevent.findById(id);
-        return res.status(200).json({events:event})
+        return res.status(200).json({ events: event })
 
     } catch (error) {
         console.log(error);
@@ -49,18 +49,20 @@ app.get('/events/by_id/:id', async (req,res)=>{
     }
 })
 
-app.get('/events/by_type/:type/:city', async (req,res)=>{
+app.get('/events/by_type/:type/:city', async (req, res) => {
     try {
         const { type, city } = req.params;
         let filter = {};
 
-        if (type !== 'all') {
+        if (type !== 'All') {
             filter.type = type;
         }
-        if (city !== 'all') {
+        if (city !== 'All') {
             filter.location = city;
         }
-        const event = await newevent.find(filter);
+        const currentDate = new Date();
+        filter.eventdate = { $gte: currentDate };
+        const event = await newevent.find(filter).sort({ eventdate: 1 });
         return res.status(200).json({
             length: event.length,
             events: event
@@ -72,10 +74,10 @@ app.get('/events/by_type/:type/:city', async (req,res)=>{
     }
 })
 
-app.get('/:organized_by', async (req,res)=>{
+app.get('/:organized_by', async (req, res) => {
     try {
         const { organized_by } = req.params;
-        const event = await newevent.find({organized_by: organized_by});
+        const event = await newevent.find({ organized_by: organized_by });
         // console.log(event)
         return res.status(200).json({
             length: event.length,
@@ -108,7 +110,7 @@ app.post('/host', async (req, res) => {
 
         let event = await newevent.create(createevent)
         // console.log("creation");
-        
+
         return res.status(200).send(event)
 
     } catch (error) {
@@ -133,10 +135,10 @@ app.put('/feedback/:username', async (req, res) => {
             {
                 $inc: {
                     rating: incrementValue, // Increment the rating by the provided value
-                    rating_count: 1          
+                    rating_count: 1
                 }
             },
-            { new: true } 
+            { new: true }
         );
 
         if (!user) {
@@ -150,22 +152,22 @@ app.put('/feedback/:username', async (req, res) => {
     }
 });
 
-app.get('/view_profile/:username', async(req,res)=>{
+app.get('/view_profile/:username', async (req, res) => {
     try {
-        const {username} = req.params;
+        const { username } = req.params;
         // console.log(username);
-        
-        const user = await userModel.find({username: username})
+
+        const user = await userModel.find({ username: username })
         // console.log(user);
-        
+
         return res.status(200).json({
             success: true,
             user: user
         })
     } catch (error) {
         console.log(error);
-        
-        res.status(404).send('Nai Mila')
+
+        res.status(404).send('Internal Error')
     }
 })
 
